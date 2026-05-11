@@ -1,8 +1,9 @@
 import uuid
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, Tuple
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from models.user import User, UserStatus, UserRole
@@ -13,8 +14,6 @@ import structlog
 
 logger = structlog.get_logger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 class AuthService:
     def __init__(self):
@@ -24,10 +23,27 @@ class AuthService:
         self.refresh_token_expire = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
     def hash_password(self, password: str) -> str:
-        return pwd_context.hash(password)
+        pwd_bytes = password.encode('utf-8')[:72]
+        return bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode('utf-8')
 
     def verify_password(self, plain: str, hashed: str) -> bool:
-        return pwd_context.verify(plain, hashed)
+        try:
+            return bcrypt.checkpw(plain.encode('utf-8')[:72], hashed.encode('utf-8'))
+        except Exception:
+            return False
+
+    def hash_token(self, token: str) -> str:
+        """Hash long tokens (like JWTs) with SHA256 pre-hash to fit bcrypt's 72-byte limit."""
+        digest = hashlib.sha256(token.encode()).hexdigest()
+        return bcrypt.hashpw(digest.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    def verify_token(self, token: str, hashed: str) -> bool:
+        """Verify a token that was hashed with hash_token."""
+        try:
+            digest = hashlib.sha256(token.encode()).hexdigest()
+            return bcrypt.checkpw(digest.encode('utf-8'), hashed.encode('utf-8'))
+        except Exception:
+            return False
 
     def create_access_token(self, user_id: str, role: str, org_id: Optional[str] = None) -> str:
         now = datetime.now(timezone.utc)
@@ -136,7 +152,7 @@ class AuthService:
         )
         refresh_token = self.create_refresh_token(str(user.id))
 
-        refresh_hash = self.hash_password(refresh_token)
+        refresh_hash = self.hash_token(refresh_token)
         await db.execute(
             update(User).where(User.id == user.id).values(refresh_token_hash=refresh_hash)
         )

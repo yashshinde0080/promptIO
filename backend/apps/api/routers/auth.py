@@ -121,7 +121,7 @@ async def refresh_token(
         if not user:
             raise ValueError("User not found")
 
-        if not user.refresh_token_hash or not auth_service.verify_password(
+        if not user.refresh_token_hash or not auth_service.verify_token(
             data.refresh_token, user.refresh_token_hash
         ):
             raise ValueError("Invalid refresh token")
@@ -133,7 +133,7 @@ async def refresh_token(
         new_refresh_token = auth_service.create_refresh_token(str(user.id))
 
         from sqlalchemy import update
-        refresh_hash = auth_service.hash_password(new_refresh_token)
+        refresh_hash = auth_service.hash_token(new_refresh_token)
         await db.execute(
             update(User).where(User.id == user.id).values(refresh_token_hash=refresh_hash)
         )

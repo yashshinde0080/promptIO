@@ -56,7 +56,7 @@ class User(Base):
 
     # Relationships
     organization = relationship("Organization", back_populates="users")
-    prompts = relationship("Prompt", back_populates="owner", lazy="dynamic")
+    prompts = relationship("Prompt", back_populates="owner", foreign_keys="[Prompt.owner_id]", lazy="dynamic")
     ai_runs = relationship("AIRun", back_populates="user", lazy="dynamic")
     audit_logs = relationship("AuditLog", back_populates="user", lazy="dynamic")
 

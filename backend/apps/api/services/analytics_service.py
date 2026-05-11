@@ -90,9 +90,10 @@ class AnalyticsService:
         self, user: User, db: AsyncSession, days: int
     ) -> list:
         since = datetime.now(timezone.utc) - timedelta(days=days)
+        day_col = func.date_trunc("day", AIRun.created_at).label("day")
         result = await db.execute(
             select(
-                func.date_trunc("day", AIRun.created_at).label("day"),
+                day_col,
                 func.count(AIRun.id).label("count"),
                 func.coalesce(func.sum(AIRun.cost_usd), 0).label("cost"),
             )
@@ -102,8 +103,8 @@ class AnalyticsService:
                     AIRun.created_at >= since,
                 )
             )
-            .group_by(func.date_trunc("day", AIRun.created_at))
-            .order_by(func.date_trunc("day", AIRun.created_at))
+            .group_by(day_col)
+            .order_by(day_col)
         )
         return [
             {
