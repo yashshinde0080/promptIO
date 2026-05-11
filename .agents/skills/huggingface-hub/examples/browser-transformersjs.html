@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformers.js Browser Inference</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #ff6b35;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status {
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .label {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+
+        .label.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .label.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .score {
+            color: #666;
+            font-size: 14px;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .model-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤗 Transformers.js</h1>
+        <p class="subtitle">Run ML models directly in your browser - no server required!</p>
+
+        <div class="note">
+            <strong>First load:</strong> Models are downloaded and cached in your browser.
+            This may take a moment on first use.
+        </div>
+
+        <!-- Sentiment Analysis -->
+        <div class="section">
+            <h2>1. Sentiment Analysis</h2>
+            <p class="model-info">Model: Xenova/distilbert-base-uncased-finetuned-sst-2-english</p>
+
+            <textarea id="sentiment-input" placeholder="Enter text to analyze sentiment...">I absolutely love using Hugging Face! The models are amazing and so easy to use.</textarea>
+            <button id="sentiment-btn" onclick="runSentiment()">Analyze Sentiment</button>
+
+            <div id="sentiment-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Text Generation -->
+        <div class="section">
+            <h2>2. Text Generation</h2>
+            <p class="model-info">Model: Xenova/gpt2</p>
+
+            <input type="text" id="generation-input" placeholder="Start your text..." value="The future of AI is">
+            <button id="generation-btn" onclick="runGeneration()">Generate</button>
+
+            <div id="generation-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Question Answering -->
+        <div class="section">
+            <h2>3. Question Answering</h2>
+            <p class="model-info">Model: Xenova/distilbert-base-cased-distilled-squad</p>
+
+            <textarea id="qa-context" placeholder="Context...">Hugging Face is a company that develops tools for building machine learning applications. They are known for the Transformers library and the Hugging Face Hub, which hosts thousands of models and datasets.</textarea>
+            <input type="text" id="qa-question" placeholder="Ask a question..." value="What is Hugging Face known for?">
+            <button id="qa-btn" onclick="runQA()">Answer</button>
+
+            <div id="qa-result" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- Code Example -->
+        <div class="section">
+            <h2>How to Use in Your Project</h2>
+
+            <pre><code>&lt;script type="module"&gt;
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers';
+
+// Sentiment analysis
+const classifier = await pipeline(
+    'sentiment-analysis',
+    'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
+);
+const result = await classifier('I love this!');
+console.log(result);
+// [{label: 'POSITIVE', score: 0.9998}]
+
+// Text generation
+const generator = await pipeline(
+    'text-generation',
+    'Xenova/gpt2'
+);
+const text = await generator('Once upon a time', { max_new_tokens: 50 });
+console.log(text);
+
+// Feature extraction (embeddings)
+const extractor = await pipeline(
+    'feature-extraction',
+    'Xenova/all-MiniLM-L6-v2'
+);
+const embeddings = await extractor('Hello world');
+console.log(embeddings);
+&lt;/script&gt;</code></pre>
+        </div>
+
+        <!-- NPM Installation -->
+        <div class="section">
+            <h2>NPM Installation</h2>
+
+            <pre><code>npm install @huggingface/transformers</code></pre>
+
+            <pre><code>import { pipeline } from '@huggingface/transformers';
+
+// Works in Node.js, browser, Deno, etc.
+const classifier = await pipeline('sentiment-analysis');
+const result = await classifier('Hello!');
+</code></pre>
+        </div>
+
+        <p style="text-align: center; color: #666; margin-top: 30px;">
+            <a href="https://huggingface.co/docs/transformers.js" target="_blank">
+                View Full Documentation →
+            </a>
+        </p>
+    </div>
+
+    <!-- Transformers.js -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers';
+
+        // Optional: Use local cache
+        // env.cacheDir = './.cache';
+
+        // Store pipelines globally for reuse
+        window.pipelines = {};
+
+        // Sentiment Analysis
+        window.runSentiment = async function() {
+            const btn = document.getElementById('sentiment-btn');
+            const result = document.getElementById('sentiment-result');
+            const input = document.getElementById('sentiment-input').value;
+
+            btn.disabled = true;
+            result.style.display = 'block';
+            result.innerHTML = '<span class="loading"></span>Loading model...';
+
+            try {
+                if (!window.pipelines.sentiment) {
+                    window.pipelines.sentiment = await pipeline(
+                        'sentiment-analysis',
+                        'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
+                    );
+                }
+
+                result.innerHTML = '<span class="loading"></span>Analyzing...';
+                const output = await window.pipelines.sentiment(input);
+
+                const label = output[0].label;
+                const score = (output[0].score * 100).toFixed(1);
+                const labelClass = label === 'POSITIVE' ? 'positive' : 'negative';
+
+                result.innerHTML = `
+                    <span class="label ${labelClass}">${label}</span>
+                    <span class="score">${score}% confidence</span>
+                `;
+            } catch (error) {
+                result.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
+            }
+
+            btn.disabled = false;
+        };
+
+        // Text Generation
+        window.runGeneration = async function() {
+            const btn = document.getElementById('generation-btn');
+            const result = document.getElementById('generation-result');
+            const input = document.getElementById('generation-input').value;
+
+            btn.disabled = true;
+            result.style.display = 'block';
+            result.innerHTML = '<span class="loading"></span>Loading model...';
+
+            try {
+                if (!window.pipelines.generation) {
+                    window.pipelines.generation = await pipeline(
+                        'text-generation',
+                        'Xenova/gpt2'
+                    );
+                }
+
+                result.innerHTML = '<span class="loading"></span>Generating...';
+                const output = await window.pipelines.generation(input, {
+                    max_new_tokens: 50,
+                    temperature: 0.7
+                });
+
+                result.innerHTML = `<strong>Generated:</strong><br>${output[0].generated_text}`;
+            } catch (error) {
+                result.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
+            }
+
+            btn.disabled = false;
+        };
+
+        // Question Answering
+        window.runQA = async function() {
+            const btn = document.getElementById('qa-btn');
+            const result = document.getElementById('qa-result');
+            const context = document.getElementById('qa-context').value;
+            const question = document.getElementById('qa-question').value;
+
+            btn.disabled = true;
+            result.style.display = 'block';
+            result.innerHTML = '<span class="loading"></span>Loading model...';
+
+            try {
+                if (!window.pipelines.qa) {
+                    window.pipelines.qa = await pipeline(
+                        'question-answering',
+                        'Xenova/distilbert-base-cased-distilled-squad'
+                    );
+                }
+
+                result.innerHTML = '<span class="loading"></span>Finding answer...';
+                const output = await window.pipelines.qa(question, context);
+
+                const score = (output.score * 100).toFixed(1);
+                result.innerHTML = `
+                    <strong>Answer:</strong> ${output.answer}<br>
+                    <span class="score">${score}% confidence</span>
+                `;
+            } catch (error) {
+                result.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
+            }
+
+            btn.disabled = false;
+        };
+    </script>
+</body>
+</html>

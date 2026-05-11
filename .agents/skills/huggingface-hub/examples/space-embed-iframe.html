@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hugging Face Space Embedding Examples</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .example {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .example h3 {
+            margin-top: 0;
+            color: #ff6b35;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Monaco', monospace;
+        }
+
+        .demo-container {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Responsive iframe wrapper */
+        .iframe-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+        }
+
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Fixed height iframe */
+        .iframe-fixed {
+            width: 100%;
+            height: 450px;
+            border: none;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hugging Face Space Embedding Examples</h1>
+
+    <p>Examples of embedding Hugging Face Spaces in your website.</p>
+
+    <!-- Example 1: Basic IFrame -->
+    <div class="example">
+        <h3>1. Basic IFrame</h3>
+        <p>Simple fixed-size iframe embedding.</p>
+
+        <pre><code>&lt;iframe
+    src="https://nimaboscarino-hotdog-gradio.hf.space"
+    frameborder="0"
+    width="100%"
+    height="450"
+&gt;&lt;/iframe&gt;</code></pre>
+
+        <div class="demo-container">
+            <iframe
+                src="https://nimaboscarino-hotdog-gradio.hf.space"
+                frameborder="0"
+                width="100%"
+                height="450"
+                loading="lazy"
+            ></iframe>
+        </div>
+    </div>
+
+    <!-- Example 2: Responsive IFrame -->
+    <div class="example">
+        <h3>2. Responsive IFrame (16:9)</h3>
+        <p>Maintains aspect ratio on all screen sizes.</p>
+
+        <pre><code>&lt;style&gt;
+.iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+.iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+&lt;/style&gt;
+
+&lt;div class="iframe-wrapper"&gt;
+    &lt;iframe src="https://nimaboscarino-hotdog-gradio.hf.space"&gt;&lt;/iframe&gt;
+&lt;/div&gt;</code></pre>
+
+        <div class="iframe-wrapper">
+            <iframe
+                src="https://nimaboscarino-hotdog-gradio.hf.space"
+                loading="lazy"
+            ></iframe>
+        </div>
+    </div>
+
+    <!-- Example 3: Gradio WebComponent -->
+    <div class="example">
+        <h3>3. Gradio WebComponent</h3>
+        <p>Better performance and auto-sizing (Gradio Spaces only).</p>
+
+        <pre><code>&lt;!-- Load Gradio JS (match version in Space) --&gt;
+&lt;script
+    type="module"
+    src="https://gradio.s3-us-west-2.amazonaws.com/5.0.0/gradio.js"
+&gt;&lt;/script&gt;
+
+&lt;!-- Embed the Space --&gt;
+&lt;gradio-app src="https://nimaboscarino-hotdog-gradio.hf.space"&gt;&lt;/gradio-app&gt;</code></pre>
+
+        <div class="note">
+            <strong>Note:</strong> WebComponents require the Gradio JS library
+            to be loaded. Match the version to the Space's sdk_version.
+        </div>
+
+        <!-- Uncomment to see live demo (requires loading Gradio JS) -->
+        <!--
+        <script
+            type="module"
+            src="https://gradio.s3-us-west-2.amazonaws.com/5.0.0/gradio.js"
+        ></script>
+        <gradio-app src="https://nimaboscarino-hotdog-gradio.hf.space"></gradio-app>
+        -->
+    </div>
+
+    <!-- Example 4: Multiple Spaces -->
+    <div class="example">
+        <h3>4. Multiple Spaces Grid</h3>
+        <p>Display multiple Spaces in a grid layout.</p>
+
+        <pre><code>&lt;style&gt;
+.spaces-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+}
+.space-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.space-card h4 {
+    margin: 0;
+    padding: 10px;
+    background: #f0f0f0;
+}
+&lt;/style&gt;
+
+&lt;div class="spaces-grid"&gt;
+    &lt;div class="space-card"&gt;
+        &lt;h4&gt;Image Classifier&lt;/h4&gt;
+        &lt;iframe src="https://space1.hf.space" height="300"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+    &lt;div class="space-card"&gt;
+        &lt;h4&gt;Text Generator&lt;/h4&gt;
+        &lt;iframe src="https://space2.hf.space" height="300"&gt;&lt;/iframe&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <!-- Example 5: Lazy Loading -->
+    <div class="example">
+        <h3>5. Lazy Loading (Performance)</h3>
+        <p>Only load Space when scrolled into view.</p>
+
+        <pre><code>&lt;iframe
+    src="https://username-spacename.hf.space"
+    loading="lazy"
+    width="100%"
+    height="450"
+&gt;&lt;/iframe&gt;</code></pre>
+
+        <div class="note">
+            <strong>Tip:</strong> Use <code>loading="lazy"</code> for Spaces
+            below the fold to improve page load performance.
+        </div>
+    </div>
+
+    <!-- Example 6: With Loading Placeholder -->
+    <div class="example">
+        <h3>6. With Loading Placeholder</h3>
+        <p>Show a placeholder while Space loads.</p>
+
+        <pre><code>&lt;style&gt;
+.space-container {
+    position: relative;
+    width: 100%;
+    height: 450px;
+    background: #f0f0f0;
+}
+.space-container::before {
+    content: "Loading Space...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+}
+.space-container iframe {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+&lt;/style&gt;
+
+&lt;div class="space-container"&gt;
+    &lt;iframe src="https://username-spacename.hf.space"&gt;&lt;/iframe&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+
+    <!-- Example 7: Full Page Embed -->
+    <div class="example">
+        <h3>7. Full Page Embed</h3>
+        <p>Make Space fill the entire page.</p>
+
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;iframe src="https://username-spacename.hf.space"&gt;&lt;/iframe&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    </div>
+
+    <!-- Example 8: React Component -->
+    <div class="example">
+        <h3>8. React Component</h3>
+        <p>Reusable React component for embedding Spaces.</p>
+
+        <pre><code>// HFSpace.jsx
+import React from 'react';
+
+export function HFSpace({ username, spaceName, height = 450 }) {
+    const url = `https://${username}-${spaceName}.hf.space`;
+
+    return (
+        &lt;iframe
+            src={url}
+            style={{
+                width: '100%',
+                height: `${height}px`,
+                border: 'none',
+                borderRadius: '8px'
+            }}
+            loading="lazy"
+            title={`${username}/${spaceName} Space`}
+        /&gt;
+    );
+}
+
+// Usage:
+// &lt;HFSpace username="gradio" spaceName="text-generation" height={500} /&gt;</code></pre>
+    </div>
+
+    <!-- Tips -->
+    <div class="example">
+        <h3>Tips & Best Practices</h3>
+        <ul>
+            <li><strong>HTTPS required:</strong> Spaces use HTTPS, so your page must also use HTTPS</li>
+            <li><strong>Cross-origin:</strong> Spaces run in a different origin, so JavaScript communication is limited</li>
+            <li><strong>Mobile:</strong> Test on mobile devices - some Spaces may need more height</li>
+            <li><strong>Loading:</strong> Use <code>loading="lazy"</code> for better performance</li>
+            <li><strong>Accessibility:</strong> Add meaningful <code>title</code> attribute to iframes</li>
+            <li><strong>Private Spaces:</strong> Cannot be embedded - viewers need to be logged in</li>
+        </ul>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; color: #666;">
+        <p>
+            Learn more at
+            <a href="https://huggingface.co/docs/hub/spaces-embed">
+                Hugging Face Documentation
+            </a>
+        </p>
+    </footer>
+</body>
+</html>
