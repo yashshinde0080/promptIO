@@ -275,4 +275,4 @@ class AIRouterService:
         }
 
 
-ai_router_service = AIRouterService()
+ai_router_service = AIRouterService() 
