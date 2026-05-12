@@ -76,13 +76,20 @@ async def list_prompts(
         prompt_list.append({
             "id": str(p.id),
             "title": p.title,
-            "description": p.description,
+            "description": p.description or "Custom preset template created from Prompt Studio.",
+            "content": p.original_content,
+            "original_content": p.original_content,
+            "optimized_content": p.optimized_content,
             "framework": str(p.framework),
+            "category": "Development",
             "status": str(p.status),
             "visibility": str(p.visibility),
             "version": p.version,
             "is_template": p.is_template,
             "is_pinned": p.is_pinned,
+            "is_featured": p.is_pinned or False,
+            "use_count": p.total_runs or 0,
+            "rating": p.avg_quality_score or 4.5,
             "tags": p.tags or [],
             "total_runs": p.total_runs,
             "avg_quality_score": p.avg_quality_score,
@@ -176,7 +183,7 @@ async def update_prompt(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
 
-@router.delete("/{prompt_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{prompt_id}", status_code=status.HTTP_200_OK)
 async def delete_prompt(
     prompt_id: str,
     current_user: User = Depends(get_current_active_user),
@@ -192,6 +199,7 @@ async def delete_prompt(
             resource_type="prompt",
             resource_id=prompt_id,
         )
+        return {"success": True, "message": "Prompt deleted successfully"}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except PermissionError as e:

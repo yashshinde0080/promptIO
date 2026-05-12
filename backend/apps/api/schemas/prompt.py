@@ -8,6 +8,7 @@ class PromptCreateRequest(BaseModel):
     title: str
     description: Optional[str] = None
     original_content: str
+    optimized_content: Optional[str] = None
     framework: PromptFramework
     framework_data: Optional[Dict[str, Any]] = {}
     variables: Optional[List[str]] = []

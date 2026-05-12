@@ -99,16 +99,21 @@ export function usePrompt() {
         await promptApi.create({
           title,
           content: currentPrompt,
+          original_content: currentPrompt,
+          description: "Custom preset template created from Prompt Studio.",
           optimized_content:
             usePromptStore.getState().optimizedPrompt || undefined,
           framework: selectedFramework,
           visibility: "private",
-          tags: [],
+          is_template: true,
+          category: "Development",
+          tags: ["preset", selectedFramework],
         });
-        toast.success("Prompt saved!");
+        toast.success("Prompt saved to templates successfully!");
         await loadPrompts();
-      } catch {
-        toast.error("Failed to save prompt");
+      } catch (err) {
+        console.error("Save prompt error:", err);
+        toast.error("Failed to save prompt to templates");
       }
     },
     [currentPrompt, selectedFramework, loadPrompts]

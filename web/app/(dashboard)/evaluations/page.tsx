@@ -59,7 +59,8 @@ export default function EvaluationsPage() {
     },
   });
 
-  const evaluations = data?.data || [];
+  const rawData = data?.data;
+  const evaluations: Evaluation[] = Array.isArray(rawData) ? rawData : rawData?.items || rawData?.data || [];
 
   const filtered = evaluations.filter((e) =>
     e.prompt_title.toLowerCase().includes(search.toLowerCase())

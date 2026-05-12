@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   Library,
@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Tag,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { templatesAPI } from "@/lib/apis";
 import { getFrameworkColor, formatNumber, truncate } from "@/lib/utils";
 import { TEMPLATE_CATEGORIES, PROMPT_FRAMEWORKS } from "@/lib/constants";
@@ -35,6 +44,7 @@ export default function TemplatesPage() {
   const [framework, setFramework] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [featured, setFeatured] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<PromptTemplate | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["templates", { search, category, framework, featured }],
@@ -49,7 +59,21 @@ export default function TemplatesPage() {
     staleTime: 60_000,
   });
 
-  const templates = data?.data || [];
+  const rawData = data?.data;
+  const templates: PromptTemplate[] = Array.isArray(rawData) ? rawData : rawData?.items || rawData?.data || [];
+
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => templatesAPI.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+    },
+  });
+
+  const handleDeleteTemplate = (template: PromptTemplate) => {
+    setTemplateToDelete(template);
+  };
 
   const handleUseTemplate = async (template: PromptTemplate) => {
     router.push(`/prompt-studio?template=${template.id}`);
@@ -60,11 +84,11 @@ export default function TemplatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Library className="h-6 w-6 text-blue-400" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Library className="h-6 w-6 text-primary" />
             Templates
           </h1>
-          <p className="text-gray-400 mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-sm">
             Pre-built prompts using proven frameworks. Start faster.
           </p>
         </div>
@@ -111,11 +135,11 @@ export default function TemplatesPage() {
             ))}
           </SelectContent>
         </Select>
-        <div className="flex border border-white/10 rounded-lg overflow-hidden">
+        <div className="flex border border-border/60 rounded-none overflow-hidden">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 transition-colors ${
-              viewMode === "grid" ? "bg-blue-600/30 text-blue-400" : "text-gray-500 hover:text-gray-300"
+              viewMode === "grid" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Grid className="h-4 w-4" />
@@ -123,7 +147,7 @@ export default function TemplatesPage() {
           <button
             onClick={() => setViewMode("list")}
             className={`p-2 transition-colors ${
-              viewMode === "list" ? "bg-blue-600/30 text-blue-400" : "text-gray-500 hover:text-gray-300"
+              viewMode === "list" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <List className="h-4 w-4" />
@@ -135,10 +159,10 @@ export default function TemplatesPage() {
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         <button
           onClick={() => setFramework("all")}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+          className={`shrink-0 px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
             framework === "all"
-              ? "bg-blue-600/30 border-blue-500/40 text-blue-300"
-              : "border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/20"
+              ? "bg-primary/20 border-primary/40 text-primary"
+              : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
           }`}
         >
           All
@@ -147,10 +171,10 @@ export default function TemplatesPage() {
           <button
             key={f}
             onClick={() => setFramework(f)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            className={`shrink-0 px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
               framework === f
-                ? "bg-blue-600/30 border-blue-500/40 text-blue-300"
-                : "border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/20"
+                ? "bg-primary/20 border-primary/40 text-primary"
+                : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
             }`}
           >
             {FRAMEWORK_META[f].name}
@@ -181,8 +205,8 @@ export default function TemplatesPage() {
                 <Skeleton className="h-3 w-full" />
                 <Skeleton className="h-3 w-3/4" />
                 <div className="flex gap-2">
-                  <Skeleton className="h-6 w-16 rounded-full" />
-                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-16 rounded-none" />
+                  <Skeleton className="h-6 w-20 rounded-none" />
                 </div>
               </CardContent>
             </Card>
@@ -197,6 +221,7 @@ export default function TemplatesPage() {
               key={template.id}
               template={template}
               onUse={handleUseTemplate}
+              onDelete={handleDeleteTemplate}
             />
           ))}
         </div>
@@ -207,10 +232,50 @@ export default function TemplatesPage() {
               key={template.id}
               template={template}
               onUse={handleUseTemplate}
+              onDelete={handleDeleteTemplate}
             />
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal in Red Theme */}
+      <Dialog open={!!templateToDelete} onOpenChange={(open) => !open && setTemplateToDelete(null)}>
+        <DialogContent className="border-primary/30 bg-background sm:max-w-md rounded-none shadow-2xl shadow-primary/5">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary text-base font-semibold">
+              <Trash2 className="h-5 w-5" />
+              Delete Template
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground pt-1.5 text-xs">
+              Are you sure you want to delete <span className="text-foreground font-medium">"{templateToDelete?.title}"</span>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTemplateToDelete(null)}
+              className="rounded-none border-border/80 hover:bg-secondary/40 text-xs h-8"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (templateToDelete) {
+                  deleteMutation.mutate(templateToDelete.id);
+                  setTemplateToDelete(null);
+                }
+              }}
+              className="rounded-none bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 text-xs h-8 font-medium"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -218,15 +283,17 @@ export default function TemplatesPage() {
 function TemplateCard({
   template,
   onUse,
+  onDelete,
 }: {
   template: PromptTemplate;
   onUse: (t: PromptTemplate) => void;
+  onDelete: (t: PromptTemplate) => void;
 }) {
   const frameworkMeta = FRAMEWORK_META[template.framework as PromptFramework];
   const colorClass = getFrameworkColor(template.framework as PromptFramework);
 
   return (
-    <Card className="group hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5">
+    <Card className="group hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5">
       <CardContent className="p-5">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -236,19 +303,19 @@ function TemplateCard({
                 <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400 shrink-0" />
               )}
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${colorClass}`}
+                className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-semibold border ${colorClass}`}
               >
                 {frameworkMeta?.name || template.framework.toUpperCase()}
               </span>
             </div>
-            <h3 className="font-semibold text-white text-sm group-hover:text-blue-300 transition-colors">
+            <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
               {template.title}
             </h3>
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-xs text-gray-400 mb-4 line-clamp-2">
+        <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
           {truncate(template.description, 120)}
         </p>
 
@@ -257,7 +324,7 @@ function TemplateCard({
           {template.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-gray-500 bg-white/5 border border-white/10"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs text-secondary-foreground bg-secondary/20 border border-border/40"
             >
               <Tag className="h-2.5 w-2.5" />
               {tag}
@@ -266,7 +333,7 @@ function TemplateCard({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between pt-3 border-t border-border/60">
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <div className="flex items-center gap-1">
               <TrendingUp className="h-3.5 w-3.5" />
@@ -277,13 +344,24 @@ function TemplateCard({
               <span>{template.rating.toFixed(1)}</span>
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={() => onUse(template)}
-            className="h-7 text-xs gap-1"
-          >
-            Use <ArrowRight className="h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => onDelete(template)}
+              className="h-7 px-2 text-xs"
+              title="Delete Template"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onUse(template)}
+              className="h-7 text-xs gap-1"
+            >
+              Use <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -293,20 +371,22 @@ function TemplateCard({
 function TemplateListItem({
   template,
   onUse,
+  onDelete,
 }: {
   template: PromptTemplate;
   onUse: (t: PromptTemplate) => void;
+  onDelete: (t: PromptTemplate) => void;
 }) {
   const frameworkMeta = FRAMEWORK_META[template.framework as PromptFramework];
   const colorClass = getFrameworkColor(template.framework as PromptFramework);
 
   return (
-    <Card className="hover:border-white/20 transition-all duration-200">
+    <Card className="hover:border-primary/40 transition-all duration-200 group">
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Framework Badge */}
           <span
-            className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${colorClass}`}
+            className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-none text-xs font-semibold border ${colorClass}`}
           >
             {frameworkMeta?.name || template.framework.toUpperCase()}
           </span>
@@ -314,12 +394,12 @@ function TemplateListItem({
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-white text-sm truncate">{template.title}</h3>
+              <h3 className="font-medium text-foreground group-hover:text-primary transition-colors text-sm truncate">{template.title}</h3>
               {template.is_featured && (
                 <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400 shrink-0" />
               )}
             </div>
-            <p className="text-xs text-gray-400 truncate">{template.description}</p>
+            <p className="text-xs text-muted-foreground truncate">{template.description}</p>
           </div>
 
           {/* Stats */}
@@ -332,9 +412,14 @@ function TemplateListItem({
           </div>
 
           {/* Action */}
-          <Button size="sm" onClick={() => onUse(template)} className="shrink-0 gap-1">
-            Use <ArrowRight className="h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button size="sm" variant="destructive" onClick={() => onDelete(template)} className="px-2" title="Delete Template">
+              <Trash2 className="h-3 w-3" />
+            </Button>
+            <Button size="sm" onClick={() => onUse(template)} className="gap-1">
+              Use <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -344,11 +429,11 @@ function TemplateListItem({
 function EmptyState({ onClear }: { onClear: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-        <Library className="h-8 w-8 text-gray-600" />
+      <div className="h-16 w-16 rounded-none bg-secondary/10 border border-border/60 flex items-center justify-center mb-4">
+        <Library className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold text-white mb-2">No templates found</h3>
-      <p className="text-gray-400 text-sm mb-4 max-w-xs">
+      <h3 className="text-lg font-semibold text-foreground mb-2">No templates found</h3>
+      <p className="text-muted-foreground text-sm mb-4 max-w-xs">
         Try adjusting your filters or search terms to find what you&apos;re looking for.
       </p>
       <Button variant="outline" size="sm" onClick={onClear}>

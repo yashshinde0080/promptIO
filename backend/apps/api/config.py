@@ -1,7 +1,11 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from typing import List, Optional
 import os
+from dotenv import load_dotenv
+
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+load_dotenv(env_path)
 
 
 class Settings(BaseSettings):
@@ -19,15 +23,22 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_KEY: str
     DATABASE_URL: str
 
+    # AI Provider
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "openrouter")
+
     # OpenRouter
     OPENROUTER_API_KEY: str
-    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
-    OPENROUTER_DEFAULT_MODEL: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
-    OPENROUTER_SITE_URL: str = "https://promptio.app"
-    OPENROUTER_SITE_NAME: str = "PromptIO"
+    OPENROUTER_BASE_URL: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    OPENROUTER_DEFAULT_MODEL: str = os.getenv("OPENROUTER_DEFAULT_MODEL", "google/gemini-2.0-flash:free")
+    OPENROUTER_SITE_URL: str = os.getenv("OPENROUTER_SITE_URL", "https://promptio.app")
+    OPENROUTER_SITE_NAME: str = os.getenv("OPENROUTER_SITE_NAME", "PromptIO")
+
+    # Ollama
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_DEFAULT_MODEL: str = os.getenv("OLLAMA_DEFAULT_MODEL", "llama3")
 
     # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     REDIS_PASSWORD: Optional[str] = None
 
     # JWT
@@ -53,8 +64,8 @@ class Settings(BaseSettings):
     AUDIT_LOG_ENABLED: bool = True
 
     # Celery
-    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1")
+    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/2")
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
@@ -64,16 +75,21 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def fix_database_url(cls, v: str) -> str:
-        if v and v.startswith("postgresql://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if v:
+            if v.startswith("postgresql://"):
+                v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            if ":6543" in v:
+                v = v.replace(":6543", ":5432")
         return v
 
     def get_allowed_origins(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
-    class Config:
-        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=env_path,
+        case_sensitive=True,
+        extra="ignore",
+    )
 
 
 settings = Settings()

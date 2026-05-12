@@ -25,7 +25,7 @@ def _resolve_db_url(db_url: str) -> tuple:
 
     # Test if local DNS can resolve
     try:
-        socket.getaddrinfo(hostname, parsed.port or 6543, socket.AF_INET)
+        socket.getaddrinfo(hostname, parsed.port or 5432, socket.AF_INET)
         logger.info("DNS resolved locally", host=hostname)
         return db_url, ctx
     except socket.gaierror:
@@ -71,7 +71,7 @@ engine = create_async_engine(
     poolclass=NullPool,
     connect_args={
         "ssl": _ssl_ctx,
-        "prepared_statement_cache_size": 0,
+        "statement_cache_size": 0,
         "server_settings": {
             "application_name": settings.APP_NAME,
         }
