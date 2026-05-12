@@ -18,11 +18,16 @@ def _resolve_db_url(db_url: str) -> tuple:
     parsed = urlparse(db_url)
     hostname = parsed.hostname
 
+    # Create SSL context that accepts custom hostnames or IPs reliably
+    ctx = ssl_module.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl_module.CERT_NONE
+
     # Test if local DNS can resolve
     try:
-        socket.getaddrinfo(hostname, parsed.port, socket.AF_INET)
+        socket.getaddrinfo(hostname, parsed.port or 6543, socket.AF_INET)
         logger.info("DNS resolved locally", host=hostname)
-        return db_url, "require"
+        return db_url, ctx
     except socket.gaierror:
         logger.warning("Local DNS failed, trying Google DNS", host=hostname)
 
@@ -45,17 +50,12 @@ def _resolve_db_url(db_url: str) -> tuple:
             # Replace hostname with IP in URL
             resolved_url = db_url.replace(f"@{hostname}", f"@{ip}")
             logger.info("DNS resolved via Google", host=hostname, ip=ip)
-
-            # Create SSL context that accepts the IP (hostname won't match cert)
-            ctx = ssl_module.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl_module.CERT_NONE
             return resolved_url, ctx
     except Exception as e:
         logger.error("Google DNS fallback failed", error=str(e))
 
-    # Last resort: return original
-    return db_url, "require"
+    # Last resort: return original with relaxed SSL
+    return db_url, ctx
 
 
 _resolved_url, _ssl_ctx = _resolve_db_url(settings.DATABASE_URL)

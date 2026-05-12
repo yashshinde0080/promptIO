@@ -18,6 +18,7 @@ router = APIRouter(prefix="/optimize", tags=["Optimization"])
 evaluation_service_instance = EvaluationService()
 
 
+@router.post("")
 @router.post("/")
 async def optimize_prompt(
     data: OptimizeRequest,
@@ -104,7 +105,7 @@ async def stream_optimize(
     from frameworks import get_framework
     framework_handler = get_framework(data.framework.value)
     messages = framework_handler.get_messages(original_prompt=data.prompt)
-    selected_model = data.model or ai_router_service.select_model(data.framework.value)
+    selected_model = data.model or ai_router_service.default_model
 
     async def generate():
         try:
@@ -323,19 +324,9 @@ async def get_frameworks():
     return {"frameworks": frameworks, "total": len(frameworks)}
 
 
-@router.get("/models")
-async def get_available_models(
+@router.get("/model")
+async def get_current_model(
     current_user: User = Depends(get_current_active_user),
 ):
-    """Get available AI models"""
-    models = ai_router_service.get_available_models()
-    return {
-        "models": [
-            {
-                "id": model_id,
-                **model_info,
-            }
-            for model_id, model_info in models.items()
-        ],
-        "total": len(models),
-    }
+    """Get current configured AI model"""
+    return ai_router_service.get_model_info()

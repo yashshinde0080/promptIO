@@ -11,7 +11,7 @@ from config import settings
 from database import init_db, close_db
 from middleware.logging_middleware import LoggingMiddleware
 from middleware.rate_limit import RateLimitMiddleware
-from routers import auth, prompts, optimize, analytics, admin, health
+from routers import auth, prompts, optimize, analytics, admin, audit, health
 
 
 # Configure structured logging
@@ -161,6 +161,7 @@ app.include_router(prompts.router, prefix="/api/v1")
 app.include_router(optimize.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
+app.include_router(audit.router, prefix="/api/v1")
 
 
 # -------------------------------------------------------

@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -8,20 +9,52 @@ from services.analytics_service import analytics_service
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
+def _period_to_days(period: Optional[str]) -> int:
+    """Convert period string (7d/30d/90d) to integer days."""
+    if not period:
+        return 30
+    period = period.strip().lower()
+    if period.endswith("d"):
+        try:
+            return max(1, min(365, int(period[:-1])))
+        except ValueError:
+            return 30
+    try:
+        return max(1, min(365, int(period)))
+    except ValueError:
+        return 30
+
+
+@router.get("/summary")
+async def get_analytics_summary(
+    period: Optional[str] = Query(default=None),
+    days: Optional[int] = Query(default=None, ge=1, le=365),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get analytics summary (used by frontend dashboard)"""
+    d = days if days is not None else _period_to_days(period)
+    metrics = await analytics_service.get_dashboard_metrics(current_user, db, d)
+    return metrics
+
+
 @router.get("/dashboard")
 async def get_dashboard_metrics(
-    days: int = Query(default=30, ge=1, le=365),
+    period: Optional[str] = Query(default=None),
+    days: Optional[int] = Query(default=None, ge=1, le=365),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get comprehensive dashboard metrics"""
-    metrics = await analytics_service.get_dashboard_metrics(current_user, db, days)
+    d = days if days is not None else _period_to_days(period)
+    metrics = await analytics_service.get_dashboard_metrics(current_user, db, d)
     return metrics
 
 
 @router.get("/cost")
 async def get_cost_analytics(
-    days: int = Query(default=30, ge=1, le=365),
+    period: Optional[str] = Query(default=None),
+    days: Optional[int] = Query(default=None, ge=1, le=365),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -30,7 +63,8 @@ async def get_cost_analytics(
     from datetime import datetime, timedelta, timezone
     from models.ai_run import AIRun
 
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    d = days if days is not None else _period_to_days(period)
+    since = datetime.now(timezone.utc) - timedelta(days=d)
 
     result = await db.execute(
         select(
@@ -56,7 +90,7 @@ async def get_cost_analytics(
     ]
 
     return {
-        "period_days": days,
+        "period_days": d,
         "by_model": by_model,
         "total_cost": sum(m["total_cost"] for m in by_model),
     }
@@ -64,14 +98,16 @@ async def get_cost_analytics(
 
 @router.get("/usage")
 async def get_usage_analytics(
-    days: int = Query(default=30, ge=1, le=365),
+    period: Optional[str] = Query(default=None),
+    days: Optional[int] = Query(default=None, ge=1, le=365),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get token usage analytics"""
-    metrics = await analytics_service.get_dashboard_metrics(current_user, db, days)
+    d = days if days is not None else _period_to_days(period)
+    metrics = await analytics_service.get_dashboard_metrics(current_user, db, d)
     return {
-        "period_days": days,
+        "period_days": d,
         "total_tokens": metrics["total_tokens"],
         "total_runs": metrics["total_runs"],
         "avg_tokens_per_run": (
@@ -85,14 +121,16 @@ async def get_usage_analytics(
 
 @router.get("/performance")
 async def get_performance_analytics(
-    days: int = Query(default=30, ge=1, le=365),
+    period: Optional[str] = Query(default=None),
+    days: Optional[int] = Query(default=None, ge=1, le=365),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get performance analytics"""
-    metrics = await analytics_service.get_dashboard_metrics(current_user, db, days)
+    d = days if days is not None else _period_to_days(period)
+    metrics = await analytics_service.get_dashboard_metrics(current_user, db, d)
     return {
-        "period_days": days,
+        "period_days": d,
         "avg_latency_ms": metrics["avg_latency_ms"],
         "avg_quality_score": metrics["avg_quality_score"],
         "success_rate": metrics["success_rate"],

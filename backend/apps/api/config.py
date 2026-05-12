@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # OpenRouter
     OPENROUTER_API_KEY: str
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
-    OPENROUTER_DEFAULT_MODEL: str = "openai/gpt-4o"
+    OPENROUTER_DEFAULT_MODEL: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
     OPENROUTER_SITE_URL: str = "https://promptio.app"
     OPENROUTER_SITE_NAME: str = "PromptIO"
 
@@ -72,7 +72,7 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
     class Config:
-        env_file = ".env"
+        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
         case_sensitive = True
 
 
