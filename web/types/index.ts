@@ -133,6 +133,7 @@ export interface OptimizeResponse {
   optimized_prompt: string;
   framework: PromptFramework;
   model_used: AIModel;
+  provider?: string;
   improvement_score: number;
   token_count: {
     original: number;

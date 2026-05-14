@@ -236,10 +236,11 @@ export function PromptStudioLayout() {
           <div className="flex flex-col border-r border-border/40 bg-background/50">
             <div className="p-3 border-b border-border/40 shrink-0 bg-white/[0.02] flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10 font-mono py-0.5">
-                  Input
+                <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10 font-mono py-0.5 flex items-center gap-1.5">
+                  <span>Input</span>
+                  <ArrowRight className="w-3 h-3" />
+                  <span>Rough Prompt</span>
                 </Badge>
-                <span className="text-xs font-bold text-foreground/80">Rough Prompt</span>
               </div>
               <span className="text-[11px] text-muted-foreground font-mono">
                 ~{countTokensEstimate(currentPrompt)} tokens
@@ -276,33 +277,43 @@ export function PromptStudioLayout() {
 
           {/* Panel 2: Output --> Framework Optimized Prompt */}
           <div className="flex flex-col bg-card/5 overflow-hidden">
-            <div className="p-3 border-b border-border/40 shrink-0 bg-white/[0.02] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10 font-mono py-0.5 gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  Output
-                </Badge>
-                <span className="text-xs font-bold text-foreground/80">
-                  {activeFrameworkMeta.name} Optimized
-                </span>
-              </div>
-
-              {optimizedPrompt && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground font-mono">
-                    ~{countTokensEstimate(optimizedPrompt)} tokens
+            <div className="p-3 border-b border-border/40 shrink-0 bg-white/[0.02] flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10 font-mono py-0.5 flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Output</span>
+                    <ArrowRight className="w-3 h-3" />
+                    <span>Optimized Prompt</span>
+                  </Badge>
+                  <span className="text-xs font-medium text-foreground/80 flex items-center gap-1 flex-wrap">
+                    <span>with</span>
+                    <strong className="text-primary font-bold">{activeFrameworkMeta.name}</strong>
+                    <span>framework using</span>
+                    <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0.2 bg-primary/15 text-primary border-none font-bold">
+                      {lastResponse?.provider ? String(lastResponse.provider).toUpperCase() : "OPENROUTER"} API
+                    </Badge>
+                    <span className="text-[11px] text-muted-foreground">({lastResponse?.model_used || "default model"})</span>
                   </span>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={handleCopy}
-                    className="h-6 px-2 hover:bg-white/5 gap-1 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
                 </div>
-              )}
+
+                {optimizedPrompt && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      ~{countTokensEstimate(optimizedPrompt)} tokens
+                    </span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={handleCopy}
+                      className="h-6 px-2 hover:bg-white/5 gap-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copied ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 flex flex-col">
