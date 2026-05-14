@@ -173,94 +173,149 @@
   }
 }
 
-/* ─── Utility Classes ─── */
-@layer utilities {
-  /* Text gradient */
-  .text-gradient-primary {
-    background: linear-gradient(135deg, var(--primary), oklch(0.70 0.22 35));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+/* ─── Global Utility Classes (Root Level to prevent layer override) ─── */
+/* Text gradients and vibrant styles */
+.text-gradient-primary {
+  color: var(--primary);
+  text-shadow: 0 0 25px color-mix(in oklch, var(--primary) 40%, transparent);
+  font-weight: inherit;
+}
 
-  .text-gradient-warm {
-    background: linear-gradient(135deg, oklch(0.75 0.20 45), var(--primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+.text-gradient-warm {
+  color: oklch(0.70 0.22 35);
+  text-shadow: 0 0 25px color-mix(in oklch, oklch(0.70 0.22 35) 40%, transparent);
+  font-weight: inherit;
+}
 
-  /* Glow effects */
-  .glow-primary {
-    box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
-  }
+.text-gradient-violet {
+  color: oklch(0.65 0.25 300);
+  text-shadow: 0 0 25px color-mix(in oklch, oklch(0.65 0.25 300) 40%, transparent);
+  font-weight: inherit;
+}
 
-  .glow-blue {
-    box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
-  }
+@utility text-gradient-primary {
+  color: var(--primary);
+  text-shadow: 0 0 25px color-mix(in oklch, var(--primary) 40%, transparent);
+}
 
-  .btn-primary-glow {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 40%, transparent);
-    transition: all 0.2s ease-in-out;
-  }
-  .btn-primary-glow:hover {
-    opacity: 0.9;
-    box-shadow: 0 0 30px color-mix(in oklch, var(--primary) 60%, transparent);
-  }
+@utility text-gradient-warm {
+  color: oklch(0.70 0.22 35);
+  text-shadow: 0 0 25px color-mix(in oklch, oklch(0.70 0.22 35) 40%, transparent);
+}
 
-  /* Glass effect */
-  .glass {
-    background: oklch(1 0 0 / 5%);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid oklch(1 0 0 / 8%);
-  }
+@utility text-gradient-violet {
+  color: oklch(0.65 0.25 300);
+  text-shadow: 0 0 25px color-mix(in oklch, oklch(0.65 0.25 300) 40%, transparent);
+}
 
-  .glass-strong {
-    background: oklch(1 0 0 / 8%);
-    backdrop-filter: blur(24px) saturate(200%);
-    border: 1px solid oklch(1 0 0 / 12%);
-  }
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
+}
 
-  /* Scrollbar */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: oklch(1 0 0 / 10%);
-    border-radius: 3px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: oklch(1 0 0 / 20%);
-  }
+.glow-blue {
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
+}
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+@utility glow-primary {
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
+}
 
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+@utility glow-blue {
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 30%, transparent), 0 0 60px color-mix(in oklch, var(--primary) 10%, transparent);
+}
 
-  /* Noise texture overlay */
-  .noise-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
+/* Buttons */
+.btn-primary-glow {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 40%, transparent);
+  transition: all 0.2s ease-in-out;
+}
+.btn-primary-glow:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 30px color-mix(in oklch, var(--primary) 60%, transparent);
+}
+
+@utility btn-primary-glow {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 20px color-mix(in oklch, var(--primary) 40%, transparent);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Glass effect */
+.glass {
+  background: oklch(1 0 0 / 5%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 8%);
+}
+
+.glass-strong {
+  background: oklch(1 0 0 / 8%);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid oklch(1 0 0 / 12%);
+}
+
+@utility glass {
+  background: oklch(1 0 0 / 5%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 8%);
+}
+
+@utility glass-strong {
+  background: oklch(1 0 0 / 8%);
+  backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid oklch(1 0 0 / 12%);
+}
+
+/* Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 10%);
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: oklch(1 0 0 / 20%);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Noise texture overlay */
+.noise-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }
