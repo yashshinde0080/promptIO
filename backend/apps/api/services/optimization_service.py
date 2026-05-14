@@ -175,6 +175,7 @@ class OptimizationService:
             "token_difference": token_count_after - token_count_before,
             "optimization_score": opt_score,
             "model_used": selected_model,
+            "provider": ai_router_service.provider,
             "latency_ms": total_latency_ms,
             "ai_latency_ms": ai_response["latency_ms"],
             "input_tokens": ai_response["input_tokens"],
